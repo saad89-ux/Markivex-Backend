@@ -26,7 +26,7 @@ const seedAdmin = async () => {
       name: "Markivex Admin",
       email: "admin@markivex.com",
       password: hashedPassword,
-      role: "admin",
+      role: "superadmin",
     });
 
     console.log("\n✅ Admin created successfully!");

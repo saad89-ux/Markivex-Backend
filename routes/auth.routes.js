@@ -1,9 +1,9 @@
 import express from "express";
-import { login } from "../controllers/auth.controller.js";
-import loginLimiter from "../middleware/loginLimiter.js";
+import { login, refreshAccessToken } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
-router.post("/login", loginLimiter, login);
+router.post("/login", login);
+router.post("/refresh", refreshAccessToken);
 
 export default router;

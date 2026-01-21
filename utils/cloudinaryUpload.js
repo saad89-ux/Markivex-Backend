@@ -15,8 +15,11 @@ export const uploadToCloudinary = (buffer, folder = "markivex") => {
     );
 
     streamifier.createReadStream(buffer).pipe(stream);
+
   });
 };
+
+
 
 export const deleteFromCloudinary = async (publicId) => {
   try {

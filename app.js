@@ -13,7 +13,8 @@ import serviceRoutes from "./routes/service.routes.js";
 import portfolioRoutes from "./routes/portfolio.routes.js";
 import testimonialRoutes from "./routes/testimonial.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
-
+import dashboardRoutes from "./routes/dashboard.routes.js";
+import userDashboardrouter from "./routes/userDashboard.routes.js"
 const app = express();
 
 // ----- SECURITY & PERFORMANCE -----
@@ -54,7 +55,8 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/upload", uploadRoutes);
-
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/userdashboard",userDashboardrouter)
 // Health check
 app.get("/", (req, res) => {
   res.json({
