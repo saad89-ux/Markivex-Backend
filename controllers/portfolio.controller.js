@@ -1,17 +1,33 @@
 import Portfolio from "../models/Portfolio.model.js";
-import { deleteFromCloudinary } from "../utils/cloudinaryUpload.js";
 
 export const createPortfolio = async (req, res) => {
   try {
-    const portfolio = await Portfolio.create({
-      ...req.body,
-      createdBy: req.user.id
+    const user = req.user;
+    const { title, description, category, images } = req.body;
+
+    if (!title || !description || !category) {
+      return res.status(400).json({
+        message: "All fields required",
+        status: false,
+      });
+    }
+
+    await Portfolio.create({
+      title,
+      description,
+      category,
+      images, // 🔥 already uploaded (same as uploadedEvidence)
+      createdBy: user.id,
     });
 
-    res.status(201).json(portfolio);
+    res.status(201).json({
+      message: "Portfolio created successfully",
+      status: true,
+    });
   } catch (error) {
-    res.status(500).json({ 
-      message: error.message 
+    res.status(500).json({
+      message: error.message,
+      status: false,
     });
   }
 };
@@ -19,23 +35,32 @@ export const createPortfolio = async (req, res) => {
 export const updatePortfolio = async (req, res) => {
   try {
     const { id } = req.params;
+    const { title, description, category, images, isPublished } = req.body;
 
-    const portfolio = await Portfolio.findByIdAndUpdate(
-      id,
-      req.body,
-      { new: true }
-    );
-
+    const portfolio = await Portfolio.findById(id);
     if (!portfolio) {
-      return res.status(404).json({ 
-        message: "Portfolio not found" 
+      return res.status(404).json({
+        message: "Portfolio not found",
+        status: false,
       });
     }
 
-    res.json(portfolio);
+    portfolio.title = title ?? portfolio.title;
+    portfolio.description = description ?? portfolio.description;
+    portfolio.category = category ?? portfolio.category;
+    portfolio.images = images ?? portfolio.images;
+    portfolio.isPublished = isPublished ?? portfolio.isPublished;
+
+    await portfolio.save();
+
+    res.status(200).json({
+      message: "Portfolio updated successfully",
+      status: true,
+    });
   } catch (error) {
-    res.status(500).json({ 
-      message: error.message 
+    res.status(500).json({
+      message: error.message,
+      status: false,
     });
   }
 };
@@ -44,73 +69,56 @@ export const deletePortfolio = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const portfolio = await Portfolio.findById(id);
-
+    const portfolio = await Portfolio.findByIdAndDelete(id);
     if (!portfolio) {
-      return res.status(404).json({ 
-        message: "Portfolio not found" 
+      return res.status(404).json({
+        message: "Portfolio not found",
+        status: false,
       });
     }
 
-    // Delete images from Cloudinary
-    for (const image of portfolio.images) {
-      if (image.publicId) {
-        await deleteFromCloudinary(image.publicId);
-      }
-    }
-
-    await Portfolio.findByIdAndDelete(id);
-
-    res.json({ 
-      message: "Portfolio deleted" 
+    res.status(200).json({
+      message: "Portfolio deleted successfully",
+      status: true,
     });
   } catch (error) {
-    res.status(500).json({ 
-      message: error.message 
+    res.status(500).json({
+      message: error.message,
+      status: false,
     });
   }
 };
 
 export const getPortfolios = async (req, res) => {
   try {
-    const { category } = req.query;
-    
-    const filter = { isPublished: true };
-    if (category) filter.category = category;
+    const data = await Portfolio.find({ isPublished: true }).sort({ createdAt: -1 });
 
-    const portfolios = await Portfolio.find(filter)
-      .sort({ createdAt: -1 });
-
-    res.json(portfolios);
+    res.status(200).json({
+      message: "Portfolio fetched",
+      status: true,
+      data,
+    });
   } catch (error) {
-    res.status(500).json({ 
-      message: error.message 
+    res.status(500).json({
+      message: error.message,
+      status: false,
     });
   }
 };
-export const getAllPortfolios = async (req, res, next) => {
+
+export const getAllPortfolios = async (req, res) => {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const data = await Portfolio.find().sort({ createdAt: -1 });
 
-    const total = await Portfolio.countDocuments();
-
-    const portfolios = await Portfolio.find()
-      .populate("createdBy", "name email")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    res.json({
-      total,
-      page,
-      pages: Math.ceil(total / limit),
-      count: portfolios.length,
-      portfolios
+    res.status(200).json({
+      message: "All portfolios fetched",
+      status: true,
+      data,
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      message: error.message,
+      status: false,
+    });
   }
 };
-;

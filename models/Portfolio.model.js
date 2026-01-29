@@ -2,18 +2,12 @@ import mongoose from "mongoose";
 
 const portfolioSchema = new mongoose.Schema(
   {
-    title: { 
-      type: String, 
-      required: true 
-    },
-    description: { 
-      type: String, 
-      required: true 
-    },
+    title: { type: String, required: true },
+    description: { type: String, required: true },
     category: {
       type: String,
       required: true,
-      enum: ["SEO", "Design", "Development", "Marketing"]
+      enum: ["Video Editing", "Design", "Development", "Marketing"]
     },
     images: [
       {
@@ -21,10 +15,7 @@ const portfolioSchema = new mongoose.Schema(
         publicId: String
       }
     ],
-    isPublished: { 
-      type: Boolean, 
-      default: true 
-    },
+    isPublished: { type: Boolean, default: true },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User"

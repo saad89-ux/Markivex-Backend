@@ -14,40 +14,78 @@ import portfolioRoutes from "./routes/portfolio.routes.js";
 import testimonialRoutes from "./routes/testimonial.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
-import userDashboardrouter from "./routes/userDashboard.routes.js"
+import userDashboardRouter from "./routes/userDashboard.routes.js";
+
 const app = express();
 
-// ----- SECURITY & PERFORMANCE -----
-app.use(helmet()); // Security headers
+/* ======================================================
+   SECURITY & PERFORMANCE
+====================================================== */
 
-// Rate limiting: limit all requests
+// Security headers
+app.use(helmet());
+
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP
-  message: "Too many requests, try again later",
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use(limiter);
 
-// CORS
+/* ======================================================
+   CORS (🔥 FIXED PROPERLY)
+====================================================== */
+
+const allowedOrigins = [
+  "http://localhost:8080",
+  "http://localhost:3000",
+  process.env.FRONTEND_URL,
+];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+      // allow REST tools (Postman, curl)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-// Logging
+// 🔑 Handle preflight requests explicitly
+app.options("*", cors());
+
+/* ======================================================
+   LOGGING
+====================================================== */
+
 if (process.env.NODE_ENV === "production") {
-  app.use(morgan("combined")); // detailed logs in production
+  app.use(morgan("combined"));
 } else {
-  app.use(morgan("dev")); // dev-friendly logs
+  app.use(morgan("dev"));
 }
 
-// Body parsers
+/* ======================================================
+   BODY PARSERS
+====================================================== */
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// ----- ROUTES -----
+/* ======================================================
+   ROUTES
+====================================================== */
+
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/contacts", contactRoutes);
@@ -56,7 +94,8 @@ app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/userdashboard",userDashboardrouter)
+app.use("/api/userdashboard", userDashboardRouter);
+
 // Health check
 app.get("/", (req, res) => {
   res.json({
@@ -66,12 +105,16 @@ app.get("/", (req, res) => {
   });
 });
 
-// 404 handler
+/* ======================================================
+   ERROR HANDLING
+====================================================== */
+
+// 404
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-// Error handler (must be last)
+// Global error handler
 app.use(errorHandler);
 
 export default app;
