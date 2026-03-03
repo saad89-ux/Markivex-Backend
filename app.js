@@ -39,8 +39,9 @@ app.use(limiter);
 ====================================================== */
 
 const allowedOrigins = [
-  "http://localhost:8080",
+  "http://localhost:5173",
   "http://localhost:3000",
+  "https://markivex-hub.vercel.app",
   process.env.FRONTEND_URL,
 ];
 
