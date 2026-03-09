@@ -23,5 +23,5 @@ jobs:
             cd Markivex/Markivex-Backend/
             git pull origin maaster 
             npm install
-            pm2 stop 2
+            pm2 restart 2
 
