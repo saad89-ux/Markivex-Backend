@@ -50,8 +50,11 @@ export const login = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error("Login error:", error.message);
+    console.error("Login error stack:", error.stack);
     res.status(500).json({
-      message: error.message
+      message: "Internal server error",
+      error: process.env.NODE_ENV === "production" ? undefined : error.message
     });
   }
 };
@@ -87,8 +90,11 @@ export const refreshAccessToken = async (req, res) => {
       accessToken: newAccessToken
     });
   } catch (error) {
+    console.error("Refresh token error:", error.message);
+    console.error("Refresh token error stack:", error.stack);
     res.status(403).json({
-      message: "Invalid or expired refresh token"
+      message: "Invalid or expired refresh token",
+      error: process.env.NODE_ENV === "production" ? undefined : error.message
     });
   }
 };
