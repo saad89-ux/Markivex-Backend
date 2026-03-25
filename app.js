@@ -45,26 +45,26 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // allow REST tools (Postman, curl)
-      if (!origin) return callback(null, true);
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow REST tools (Postman, curl)
+    if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
 
-// 🔑 Handle preflight requests explicitly
-app.options("*", cors());
+app.use(cors(corsOptions));
+
+// 🔑 Handle preflight requests explicitly with same config
+app.options("*", cors(corsOptions));
 
 /* ======================================================
    LOGGING
